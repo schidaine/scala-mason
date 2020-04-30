@@ -2,9 +2,7 @@ package schidaine.mason
 
 import play.api.libs.json._
 
-/**
- * A basic Mason property
- */
+/** A basic Mason property */
 trait Property extends Any
 
 trait PropertyBuilder[T] {
@@ -12,36 +10,7 @@ trait PropertyBuilder[T] {
   def :=(e: T) = apply(e)
 }
 
-/**
- * Properties available in @meta object
- */
-sealed trait MetaProperty extends Any with Property
-
-object MetaProperty {
-  case class Title(val t: String) extends AnyVal with MetaProperty
-  case class Description(val d: String) extends AnyVal with MetaProperty
-  case class Ctrls(ctrl: Controls) extends MetaProperty
-
-  implicit val metaWrites = new OWrites[MetaProperty] {
-    def writes(property: MetaProperty) = property match {
-      case Title(t)       => Json.obj("@title" -> t)
-      case Description(d) => Json.obj("@description" -> d)
-      case Ctrls(c)        => Json.toJsObject(c)
-      case GenericProperty(name,value) => Json.obj(name -> value)
-    }
-  }
-
-  trait MetaPropertyBuilder[T] extends PropertyBuilder[T] {
-    def apply(value: T) : MetaProperty
-    override def :=(value: T) : MetaProperty = apply(value)
-  }
-  object Title extends MetaPropertyBuilder[String]
-  object Description extends MetaPropertyBuilder[String]
-}
-
-/**
- * Properties available in a link description
- */
+/** Properties available in a link description */
 sealed trait LinkProperty extends Any with Property
 
 object LinkProperty {
@@ -82,7 +51,6 @@ object LinkProperty {
     def writes(property: OptionalLinkProperty): JsObject = property match {
       case Title(t) => Json.obj("title" -> t)
       case Description(d) => Json.obj("description" -> d)
-      // case Href(r) => Json.obj("href" -> r)
       case IsHrefTemplate(b) => Json.obj("isHrefTemplate" -> b)
       case m @ Method(_) =>  Json.obj("method" -> m.toString)
       case e @ Encoding(_) => Json.obj("encoding" -> e.toString)
@@ -104,9 +72,32 @@ object LinkProperty {
 
 }
 
-/**
- * Properties available in @error object
- */
+/** Properties available in @meta object */
+sealed trait MetaProperty extends Any with Property
+
+object MetaProperty {
+  case class Title(val t: String) extends AnyVal with MetaProperty
+  case class Description(val d: String) extends AnyVal with MetaProperty
+  case class Ctrls(ctrl: Controls) extends MetaProperty
+
+  implicit val metaPropWrites = new OWrites[MetaProperty] {
+    def writes(property: MetaProperty) = property match {
+      case Title(t)       => Json.obj("@title" -> t)
+      case Description(d) => Json.obj("@description" -> d)
+      case Ctrls(c)        => Json.toJsObject(c)
+      case GenericProperty(name,value) => Json.obj(name -> value)
+    }
+  }
+
+  trait MetaPropertyBuilder[T] extends PropertyBuilder[T] {
+    def apply(value: T) : MetaProperty
+    override def :=(value: T) : MetaProperty = apply(value)
+  }
+  object Title extends MetaPropertyBuilder[String]
+  object Description extends MetaPropertyBuilder[String]
+}
+
+/** Properties available in @error object */
 sealed trait ErrorProperty extends Any with Property
 
 object ErrorProperty {
@@ -119,7 +110,7 @@ object ErrorProperty {
 
     override def :=(e: String) : Message = apply(e)
 
-    implicit val messWrites = new OWrites[Message] {
+    implicit val errPropWrites = new OWrites[Message] {
       def writes(m: Message) = Json.obj("@message" -> m.value)
     }
   }
@@ -161,19 +152,29 @@ object ErrorProperty {
 
 }
 
-/**
- * This generic property allows to extend Mason @meta and @error objects
- */
+/** A generic property allowing extension of @meta and @error objects */
 case class GenericProperty(val name: String, val value: JsValue) extends MetaProperty with ErrorProperty.OptionalErrorProperty
 
+/** Factory for GenericProperty */
 class GenericPropertyBuilder(val propName: String) {
   def :=[T](e: T)(implicit w: Writes[T]) = GenericProperty(propName, Json.toJson(e))
 }
 
-/**
- * DSL for Mason
- * Usage : $.title = "link title"
- */
+/** DSL for Mason
+  * {{{
+  * Link(
+  *   $.href := "/resource",
+  *   $.title := "link title"
+  * )
+  * }}}
+  * {{{
+  * Meta(
+  *   $.metaTitle := "title",
+  *   $.metaDescription := "a bigger description",
+  *   $.property("extended") := "an extended field"
+  * )
+  * }}}
+  */
 trait MasonKeyBuilder {
   val title = LinkProperty.Title
   val description = LinkProperty.Description
@@ -200,10 +201,3 @@ trait MasonKeyBuilder {
 object MasonKeyBuilder extends MasonKeyBuilder {
   def property(name: String) = new GenericPropertyBuilder(name)
 }
-
-// If you want to replace $.errorId by $err.id for instance...
-// Need to add $err in Packages.scala
-// trait MasonErrorKeyBuilder {
-//   val id = ErrorProperty.Id
-//   val message = ErrorProperty.Message
-// }

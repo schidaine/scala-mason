@@ -3,3 +3,4 @@
 project/metals.sbt
 project/target
 target
+.DS_Store

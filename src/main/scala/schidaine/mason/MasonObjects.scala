@@ -2,38 +2,6 @@ package schidaine.mason
 
 import play.api.libs.json._
 
-/** Trait for objects that can contain "@controls" structure */
-trait Controllable {
-
-  /** Adds a Controls object to this object
-    * @param ctrl a Controls object
-    * @return a new Controllable object
-    */
-  def &(ctrl: Controls): Controllable
-
-}
-
-/** Represents a link object
-  *
-  * Example :
-  * {{{
-  *   val link = Link($.href := "http://my.domain.io/my-resource", $.method := POST)
-  * }}}
-  *
-  * @param href a mandatory href property
-  * @param properties optional link properties ; in case of duplicated property names, the last one override the others.
-  */
-case class Link(href: LinkProperty.Href, properties: LinkProperty.OptionalLinkProperty*)
-
-/** Serializer for [[schidaine.mason.Link]] */
-object Link {
-  implicit val linkWrites = new OWrites[Link] {
-    def writes(l: Link) = l.properties.foldLeft(Json.toJsObject(l.href)) {
-      (acc,e) => acc ++ Json.toJsObject(e)
-    }
-  }
-}
-
 /** Represents a @controls object as a collection of references.
   *
   * Example:
@@ -74,14 +42,7 @@ object Namespaces {
 /** Represents a @meta object, only present in the root object
   * @param properties zero or more meta properties ; in case of duplicated property names, the last one override the others.
   */
-case class Meta(properties: MetaProperty*) extends MasonObject with Controllable {
-
-  def &(ctrl: Controls): Meta = {
-    val props = properties :+ MetaProperty.Ctrls(ctrl)
-    Meta(props: _*)
-  }
-
-}
+case class Meta(properties: MetaProperty*) extends MasonObject
 
 /** Serializer for [[schidaine.mason.Meta]] */
 object Meta {
@@ -98,14 +59,7 @@ object Meta {
   * @param message a mandatory errorMessage
   * @param properties optional properties ; in case of duplicated property names, the last one override the others.
   */
-case class Error(message: ErrorProperty.Message, properties: ErrorProperty.OptionalErrorProperty*) extends MasonObject with Controllable {
-
-  def &(ctrl: Controls): Error = {
-    val props = properties :+ ErrorProperty.Ctrls(ctrl)
-    Error(this.message, props: _*)
-  }
-
-}
+case class Error(message: ErrorProperty.Message, properties: ErrorProperty.OptionalErrorProperty*) extends MasonObject
 
 /** Serializer for [[schidaine.mason.Error]] */
 object Error {
@@ -199,7 +153,7 @@ object RootObject {
 }
 
 /** Represents the root of a Mason object */
-case class RootObject(underlying: List[MasonObject]) extends Controllable {
+case class RootObject(underlying: List[MasonObject]) {
 
   /** Separates JsonObjects and Controls in jsonAndControls and all other mason objects in masonElements (@meta, @error, @namespaces) */
   private lazy val (jsonAndControls, masonElements) = underlying.partition { _ match {
@@ -224,7 +178,5 @@ case class RootObject(underlying: List[MasonObject]) extends Controllable {
   def ++(that: RootObject): RootObject = {
     RootObject(underlying ++ that.underlying)
   }
-
-  def &(ctrl: Controls): RootObject = this ++ ctrl
 
 }

@@ -16,14 +16,14 @@ package schidaine
   *   import schidaine.mason._
   *
   *   case class MyObject(data: String)
-  *   object MyObject {
+  *   object MyObject extends MasonValues {
   *     implicit val masonWrite = new MasonWrite[MyObject] {
   *       def writes(o: MyObject) =
-  *         Namespaces("ns1","https://localhost/rels") ++
+  *         Namespaces("ns1" -> "https://localhost/rels") ++
   *         Json.obj("object" -> o.data) ++
   *         Controls(
-  *           "self" -> Link(href := "https://localhost/my-object"),
-  *           "ns1:add-description" -> Link(href := "https://localhost/my-object/descriptions", $.encoding := JSON)
+  *           "self" -> Link($.href := "https://localhost/my-object"),
+  *           "ns1:add-description" -> Link($.href := "https://localhost/my-object/descriptions", $.encoding := JSON)
   *         )
   *     }
   *   }

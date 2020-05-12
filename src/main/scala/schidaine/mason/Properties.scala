@@ -10,6 +10,14 @@ trait PropertyBuilder[T] {
   def :=(e: T) = apply(e)
 }
 
+/** A generic property allowing extension of @meta and @error objects */
+case class GenericProperty(val name: String, val value: JsValue) extends MetaProperty with ErrorProperty.OptionalErrorProperty
+
+/** Factory for GenericProperty */
+class GenericPropertyBuilder(val propName: String) {
+  def :=[T](e: T)(implicit w: Writes[T]) = GenericProperty(propName, Json.toJson(e))
+}
+
 /** Properties available in a link description */
 sealed trait LinkProperty extends Any with Property
 
@@ -72,20 +80,53 @@ object LinkProperty {
 
 }
 
+/** Represents a link object
+  *
+  * Example :
+  * {{{
+  *   val link = Link($.href := "http://my.domain.io/my-resource", $.method := POST)
+  * }}}
+  *
+  * @param href a mandatory href property
+  * @param properties optional link properties ; in case of duplicated property names, the last one override the others.
+  */
+case class Link(href: LinkProperty.Href, properties: LinkProperty.OptionalLinkProperty*)
+
+/** Serializer for [[schidaine.mason.Link]] */
+object Link {
+  implicit val linkWrites = new OWrites[Link] {
+    def writes(l: Link) = l.properties.foldLeft(Json.toJsObject(l.href)) {
+      (acc,e) => acc ++ Json.toJsObject(e)
+    }
+  }
+}
+
+case class Relation(name: String, link: Link) extends MetaProperty with ErrorProperty.OptionalErrorProperty
+
+object Relation {
+  implicit val relWrites = new OWrites[Relation] {
+    def writes(rel: Relation) = Json.obj(rel.name -> rel.link)
+  }
+}
+
+case class RelationBuilder(name: String) extends PropertyBuilder[Link] {
+  def apply(link: Link) = Relation(name, link)
+  override def :=(link: Link) = apply(link)
+}
+
 /** Properties available in @meta object */
 sealed trait MetaProperty extends Any with Property
 
 object MetaProperty {
   case class Title(val t: String) extends AnyVal with MetaProperty
   case class Description(val d: String) extends AnyVal with MetaProperty
-  case class Ctrls(ctrl: Controls) extends MetaProperty
 
   implicit val metaPropWrites = new OWrites[MetaProperty] {
     def writes(property: MetaProperty) = property match {
-      case Title(t)       => Json.obj("@title" -> t)
-      case Description(d) => Json.obj("@description" -> d)
-      case Ctrls(c)        => Json.toJsObject(c)
+      case Title(t)                    => Json.obj("@title" -> t)
+      case Description(d)              => Json.obj("@description" -> d)
       case GenericProperty(name,value) => Json.obj(name -> value)
+      case r @ Relation(_,_)           => Json.obj("@controls" -> Json.toJsObject(r))
     }
   }
 
@@ -123,7 +164,6 @@ object ErrorProperty {
   case class Time(val t: String) extends AnyVal with OptionalErrorProperty
   case class Messages(val m: Seq[String]) extends AnyVal with OptionalErrorProperty
   case class HttpStatusCode(val c: Int) extends AnyVal with OptionalErrorProperty
-  case class Ctrls(val ctrl: Controls) extends OptionalErrorProperty
 
   implicit val errorWrites = new OWrites[OptionalErrorProperty] {
     def writes(property: OptionalErrorProperty) = property match {
@@ -133,7 +173,7 @@ object ErrorProperty {
       case Time(t)            => Json.obj("@time" -> t)
       case Messages(messages) => Json.obj("@messages" -> messages)
       case HttpStatusCode(i)  => Json.obj("@httpStatusCode" -> i)
-      case Ctrls(ctrl)        => Json.toJsObject(ctrl)
+      case r @ Relation(_,_)  => Json.obj("@controls" -> Json.toJsObject(r))
       case GenericProperty(name,value) => Json.obj(name -> value)
     }
   }
@@ -150,14 +190,6 @@ object ErrorProperty {
   object Messages extends ErrorPropertyBuilder[Seq[String]]
   object HttpStatusCode extends ErrorPropertyBuilder[Int]
 
-}
-
-/** A generic property allowing extension of @meta and @error objects */
-case class GenericProperty(val name: String, val value: JsValue) extends MetaProperty with ErrorProperty.OptionalErrorProperty
-
-/** Factory for GenericProperty */
-class GenericPropertyBuilder(val propName: String) {
-  def :=[T](e: T)(implicit w: Writes[T]) = GenericProperty(propName, Json.toJson(e))
 }
 
 /** DSL for Mason
@@ -196,8 +228,10 @@ trait MasonKeyBuilder {
   val errorTime = ErrorProperty.Time
 
   def property(name: String): GenericPropertyBuilder
+  def relation(rel: String): RelationBuilder
 }
 
 object MasonKeyBuilder extends MasonKeyBuilder {
   def property(name: String) = new GenericPropertyBuilder(name)
+  def relation(name: String) = RelationBuilder(name)
 }

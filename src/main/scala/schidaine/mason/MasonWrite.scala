@@ -40,7 +40,7 @@ object Mason {
   def toJson[A](o: A)(implicit mw: MasonWrite[A]) =
     Json.toJson(mw.writes(o))
 
-  /** Converts an iterable of 'A' to a [[play.api.libs.json.JsValue]] using a MasonWrite
+  /** Converts an iterable of 'A' to a [[play.api.libs.json.JsValue]] using a MasonWrite.
     * Meta, Error and Namespaces are merged at root level.
     * All other elements are put in a JsArray.
     * @param i the iterable of 'A'

@@ -3,7 +3,7 @@ package schidaine.mason.test
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.must.Matchers
 
-import schidaine.mason.{Controls, Link, $, HttpVerbs, Encodings}
+import schidaine.mason.{Controls, Link, $, MasonValues}
 import play.api.libs.json.{Json, JsObject}
 
 class ControlsObjectSpec extends AnyFlatSpec with Matchers {
@@ -25,7 +25,7 @@ class ControlsObjectSpec extends AnyFlatSpec with Matchers {
 
 }
 
-object ControlsObjectSpec extends HttpVerbs with Encodings with Share {
+object ControlsObjectSpec extends MasonValues with Share {
 
   val shared = Controls(
     "my-org:test" -> Link(

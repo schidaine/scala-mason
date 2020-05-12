@@ -12,15 +12,6 @@ class ErrorObjectSpec extends AnyFlatSpec with Matchers {
     Json.toJson(ErrorObjectSpec.shared) mustEqual ErrorObjectSpec.expectedJson
   }
 
-  it must "be converted to JSON with some controls" in {
-    val error = ErrorObjectSpec.shared & ControlsObjectSpec.shared
-    val expectedError = ErrorObjectSpec.expectedJson.deepMerge(
-      Json.obj("@error" -> ControlsObjectSpec.expectedJson)
-    )
-
-    Json.toJson(error) mustEqual expectedError
-  }
-
   it must "accept an optional property twice, keeping the last one in JSON" in {
     val props = ErrorObjectSpec.shared.properties :+ ($.errorCode := "ALT")
     val error = Error(ErrorObjectSpec.shared.message, props: _*)
@@ -32,17 +23,23 @@ class ErrorObjectSpec extends AnyFlatSpec with Matchers {
   }
 
   it must "accept several controls and merge them in its JSON representation" in {
-    val error =
-      ErrorObjectSpec.shared &
-      ControlsObjectSpec.shared &
-      Controls("another-org:other" -> Link($.href := "/other")) &
-      Controls("self" -> Link($.href := "/otherself"))
-    val expectedJson = ErrorObjectSpec.expectedJson
-      .deepMerge(Json.obj("@error" -> ControlsObjectSpec.expectedJson))
-      .deepMerge(Json.obj("@error" -> Json.obj(
-                            "@controls" -> Json.obj(
-                              "another-org:other" -> Json.obj("href" -> "/other"),
-                              "self" -> Json.obj("href" -> "/otherself")))))
+
+    val error = Error(
+      $.errorMessage := "There is a problem",
+      $.relation("self") := Link($.href := "/ignored"),
+      $.relation("self") := Link($.href := "/otherself"),
+      $.relation("another-org:other") := Link($.href := "/other")
+    )
+
+    val expectedJson = Json.obj(
+      "@error" -> Json.obj(
+        "@message" -> "There is a problem",
+        "@controls" -> Json.obj(
+          "self" -> Json.obj("href" -> "/otherself"),
+          "another-org:other" -> Json.obj("href" -> "/other")
+        )
+      )
+    )
 
     Json.toJson(error) mustEqual expectedJson
   }

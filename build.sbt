@@ -1,17 +1,24 @@
 import Dependencies._
 
-ThisBuild / scalaVersion     := "2.13.1"
-ThisBuild / version          := "1.1.0"
-ThisBuild / organization     := "schidaine"
-ThisBuild / organizationName := "Sylvain Chidaine"
+import xerial.sbt.Sonatype._
 
-val playJson  = "com.typesafe.play" %% "play-json" % "2.8.1"
+ThisBuild / scalaVersion     := "2.13.1"
+ThisBuild / version          := "1.2.0"
+ThisBuild / organization     := "io.github.schidaine"
+ThisBuild / organizationName := "Sylvain Chidaine"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "mason-lib",
+    organization := "io.github.schidaine",
+    name := "scala-mason",
+    description := "A scala library for Mason, a HATEOAS JSON format",
+    publishMavenStyle := true,
+    sonatypeProjectHosting := Some(GitHubHosting(
+      "schidaine",
+      "scala-mason",
+      "25348343+schidaine@users.noreply.github.com")),
+    licenses := List("MIT License" -> new URL("http://www.opensource.org/licenses/mit-license.php")),
+    publishTo := sonatypePublishToBundle.value,
     libraryDependencies += playJson,
     libraryDependencies += scalaTest % Test
   )
-
-// See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.

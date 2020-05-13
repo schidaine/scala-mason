@@ -12,6 +12,13 @@ lazy val root = (project in file("."))
     organization := "io.github.schidaine",
     name := "scala-mason",
     description := "A scala library for Mason, a HATEOAS JSON format",
+
+    // documentation
+    siteSubdirName in SiteScaladoc := "api/latest",
+    previewPath := "api/latest",
+    git.remoteRepo := "git@github.com:schidaine/scala-mason.git",
+
+    // publication
     publishMavenStyle := true,
     sonatypeProjectHosting := Some(GitHubHosting(
       "schidaine",
@@ -19,6 +26,10 @@ lazy val root = (project in file("."))
       "25348343+schidaine@users.noreply.github.com")),
     licenses := List("MIT License" -> new URL("http://www.opensource.org/licenses/mit-license.php")),
     publishTo := sonatypePublishToBundle.value,
+
+    // Dependencies
     libraryDependencies += playJson,
     libraryDependencies += scalaTest % Test
   )
+  .enablePlugins(SiteScaladocPlugin)
+  .enablePlugins(GhpagesPlugin)

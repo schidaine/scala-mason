@@ -36,6 +36,8 @@ With scala-mason, you will have to define `MasonWrites` in the same way.
 
 A small DSL helps you, using `$` and `:=`. See `MasonKeyBuilder` to see available property names.
 
+API Documentation is available here : https://schidaine.github.io/scala-mason/api/latest/schidaine/mason/index.html
+
 Example:
 ```scala
 import play.api.libs.json._

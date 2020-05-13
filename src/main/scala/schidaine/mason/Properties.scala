@@ -194,16 +194,13 @@ object ErrorProperty {
 
 /** DSL for Mason
   * {{{
-  * Link(
-  *   $.href := "/resource",
-  *   $.title := "link title"
-  * )
-  * }}}
-  * {{{
   * Meta(
   *   $.metaTitle := "title",
   *   $.metaDescription := "a bigger description",
   *   $.property("extended") := "an extended field"
+  *   $.relation("copyright") := Link(
+  *     $.href := "/copyright"
+  *     $.title := "Link to copyright information")
   * )
   * }}}
   */

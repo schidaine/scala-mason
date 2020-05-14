@@ -2,8 +2,12 @@ import Dependencies._
 
 import xerial.sbt.Sonatype._
 
-ThisBuild / scalaVersion     := "2.13.1"
-ThisBuild / version          := "1.2.0"
+lazy val scala212 = "2.12.11"
+lazy val scala213 = "2.13.2"
+lazy val supportedScalaVersions = List(scala212, scala213)
+
+ThisBuild / scalaVersion     := scala213
+ThisBuild / version          := "1.2.1"
 ThisBuild / organization     := "io.github.schidaine"
 ThisBuild / organizationName := "Sylvain Chidaine"
 
@@ -12,6 +16,7 @@ lazy val root = (project in file("."))
     organization := "io.github.schidaine",
     name := "scala-mason",
     description := "A scala library for Mason, a HATEOAS JSON format",
+    crossScalaVersions := supportedScalaVersions,
 
     // documentation
     siteSubdirName in SiteScaladoc := "api/latest",

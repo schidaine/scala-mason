@@ -6,13 +6,13 @@ import org.scalatest.matchers.must.Matchers
 import schidaine.mason._
 import play.api.libs.json.Json
 
-class MasonWriteSpec extends AnyFlatSpec with Matchers {
+class MasonWritesSpec extends AnyFlatSpec with Matchers {
 
   case class MyObject(data1: String, data2: Boolean)
 
   object MyObject {
 
-    implicit val mwrite = new MasonWrite[MyObject] {
+    implicit val mwrite = new MasonWrites[MyObject] {
       def writes(o: MyObject) =
         Namespaces("my" -> "https://api.mycompany.io/rels") ++
         Json.obj(

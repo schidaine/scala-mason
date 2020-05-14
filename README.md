@@ -14,20 +14,17 @@ For more information, please visit https://github.com/JornWildt/Mason
 Add scala-mason as a dependency in your project
 
 ```scala
-libraryDependencies += "io.github.schidaine" %% "scala-mason" % "1.2.0"
+libraryDependencies += "io.github.schidaine" %% "scala-mason" % "1.2.1"
 ```
 
-So far, only Scala 2.13 supported.
-
-TODO: scala 2.12 to be supported.
+Scala 2.12 and 2.13 are supported.
 
 ## Scope of scala-mason
 
 scala-mason 1.2.0 implements Mason with some restrictions:
-- supports Scala 2.13 (probably 2.12 because Play Json does, not yet tested),
 - is focused on writing Mason (this lib will not help to consume Mason web API),
 - following link properties are not yet supported : schema, schemaUrl, template, accept, files and alt,
-- doesn't allow a json array at root level (it should be valid if there is no Mason properties at root).
+- doesn't allow a json array as a root json element (whereas it should be valid if there is no Mason properties at root).
 
 ## How to use scala-mason ?
 In Play Json, you define `Writes` (or `Format`) with an implicit value in the companion object of your resource.
@@ -46,7 +43,7 @@ import schidaine.mason._
 case class MyObject(data: String)
 
 object MyObject {
-  implicit val masonWrite = new MasonWrite[MyObject] {
+  implicit val masonWrites = new MasonWrites[MyObject] {
     def writes(o: MyObject) =
       Namespaces("ns1" -> "https://localhost/rels") ++
       Json.obj("object" -> o.data) ++
@@ -66,7 +63,7 @@ val o = MyObject("Tardis")
 Mason.toJson(o)
 ```
 
-As soon as a `MasonWrites[A]` exists, a `MasonWrite[Option[A]]` also exists and `Iterable[A]` can be easily serialized given an array name.
+As soon as a `MasonWrites[A]` exists, a `MasonWrites[Option[A]]` also exists and `Iterable[A]` can be easily serialized given an array name.
 See example below where a Play! application manages HTTP content negotiation:
 ```scala
 import play.api.libs.json.Json

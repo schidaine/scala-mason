@@ -20,6 +20,28 @@ class RootObjectSpec extends AnyFlatSpec with Matchers {
     ControlsObjectSpec.shared ++
     MetaObjectSpec.shared
 
+  "A root object" should "be created from two Mason objects" in {
+    val mo1 = ControlsObjectSpec.shared
+    val mo2 = NamespacesObjectSpec.shared
+
+    val expectedJson =
+      NamespacesObjectSpec.expectedJson ++
+      ControlsObjectSpec.expectedJson
+
+    Json.toJson(mo1 ++ mo2) mustEqual expectedJson
+  }
+
+  it should "be created from a Mason object with another RootObject" in {
+    val mo = NamespacesObjectSpec.shared
+    val root = RootObject(ControlsObjectSpec.shared)
+
+    val expectedJson =
+      NamespacesObjectSpec.expectedJson ++
+      ControlsObjectSpec.expectedJson
+
+    Json.toJson(mo ++ root) mustEqual expectedJson
+  }
+
   "A Root object with mason properties" must "be converted to JSON" in {
 
     val expectedJson =
@@ -29,6 +51,16 @@ class RootObjectSpec extends AnyFlatSpec with Matchers {
       MetaObjectSpec.expectedJson
 
     Json.toJson(root1) mustEqual expectedJson
+  }
+
+  it must "be converted with Mason.toJson function" in {
+    val expectedJson =
+      NamespacesObjectSpec.expectedJson ++
+      Json.obj("data" -> "a small data 1") ++
+      ControlsObjectSpec.expectedJson ++
+      MetaObjectSpec.expectedJson
+
+    Mason.toJson(root1) mustEqual expectedJson
   }
 
   it must "be merged with another RootObject" in {

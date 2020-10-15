@@ -3,11 +3,11 @@ import Dependencies._
 import xerial.sbt.Sonatype._
 
 lazy val scala212 = "2.12.11"
-lazy val scala213 = "2.13.2"
+lazy val scala213 = "2.13.3"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 ThisBuild / scalaVersion     := scala213
-ThisBuild / version          := "1.2.1"
+ThisBuild / version          := "1.2.2"
 ThisBuild / organization     := "io.github.schidaine"
 ThisBuild / organizationName := "Sylvain Chidaine"
 

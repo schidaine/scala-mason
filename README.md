@@ -14,7 +14,7 @@ For more information, please visit https://github.com/JornWildt/Mason
 Add scala-mason as a dependency in your project
 
 ```scala
-libraryDependencies += "io.github.schidaine" %% "scala-mason" % "1.2.1"
+libraryDependencies += "io.github.schidaine" %% "scala-mason" % "1.2.2"
 ```
 
 Scala 2.12 and 2.13 are supported.

@@ -20,6 +20,11 @@ object MasonWrites {
     def writes(o: A): RootObject = f(o)
   }
 
+  /** Mason.toJson(rootObject) equivalent to Json.toJson(rootObject) */
+  implicit object RootObjectMasonWrites extends MasonWrites[RootObject] {
+    def writes(ro: RootObject) = ro
+  }
+
   import scala.language.implicitConversions
 
   /** Makes a MasonWrites for type Option[T] as soon as a Mason serializer exists for type T */

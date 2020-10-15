@@ -90,6 +90,8 @@ sealed trait MasonObject {
   /** Creates a new Root object from this object and another MasonObject */
   final def ++(mo: MasonObject): RootObject = RootObject(this) ++ mo
 
+  /** Creates a new Root object from this object and another RootObject */
+  final def ++(ro: RootObject): RootObject = ro ++ this
 }
 
 /** Implicit conversions and serializer for [[schidaine.mason.MasonObject]] instances.
